@@ -1,0 +1,190 @@
+# Import tkinter and other necessary modules
+import tkinter as tk
+from tkinter import scrolledtext, messagebox
+from tkinter.font import Font
+
+# Create the main application window
+window = tk.Tk()
+window.title("Chatbot Tab")
+
+# Create a variable to store the chatbot display height
+chat_height = tk.IntVar()
+chat_height.set(20)  # Initial chatbot display height
+
+# Create a label to display the static text "Arcadia Chatbot"
+chatbot_label = tk.Label(window, text="Arcadia Chatbot", font=("Arial", 16, "bold"))
+chatbot_label.pack(pady=(10, 0))  # Add padding to the top only
+
+# Create a function to handle resizing the chatbot display area
+def resize_chatbot():
+    height = chat_height.get()
+    chat_messages.config(height=height)
+    chat_messages.pack(padx=10, pady=10)
+
+# Function to display a message when a link is clicked
+def link_clicked(event, message):
+    if message == "Back to Main Menu":
+        back_to_main_menu()
+    elif message == "Account Level":
+        account_level_clicked()
+    else:
+        bot_response = "Welcome to " + message + " Section"
+        display_bot_response(bot_response)
+
+# Function to handle when "Account Level" link is clicked
+def account_level_clicked():
+    # Clear the current chat display
+    chat_messages.delete("1.0", tk.END)
+    
+    # Add the links for "Account Level" details
+    account_links = [
+        "Account name/Account number/Account type",
+        "Customer name/Customer number",
+        "Amount Due/Amount due by date",
+        "Statement/Bill/Invoice date",
+        "Total bill amount/New charges",
+        "Recent payment/Recent payment date",
+        "Previous balance/Outstanding balance",
+        "Disconnect date"
+    ]
+    
+    for link in account_links:
+        chat_messages.insert(tk.END, link + "\n", ("link", link))
+        chat_messages.tag_configure(link, foreground="blue", font=("Arial", 13))  # Increase font size here
+        chat_messages.tag_bind(link, "<Button-1>", lambda event, msg=link: link_clicked(event, msg))
+        chat_messages.tag_bind(link, "<Enter>", change_cursor)
+        chat_messages.tag_bind(link, "<Leave>", restore_cursor)
+        chat_messages.insert(tk.END, "\n" * LINK_SPACING)  # Add empty lines with specified spacing
+        
+    
+    # Scroll to the bottom of the chat display
+    chat_messages.see(tk.END)
+
+# Function to handle when "Back to Main Menu" button is clicked
+def back_to_main_menu():
+    # Clear the current chat display
+    chat_messages.delete("1.0", tk.END)
+    
+    # Add the initial set of links
+    links = [
+        ["Statement Level", "Account Level", "Meter Level", "Usage Level"],
+        ["Charge Level", "Address Level", "Other Domain Queries"]
+    ]
+    
+    for row in links:
+        for link in row:
+            chat_messages.insert(tk.END, link + "\u2003\u2003\u2003\u2003\u2003\u2003", ("link", link))
+            chat_messages.tag_configure(link, foreground="blue", font=("Arial", 13))  # Increase font size here
+            chat_messages.tag_bind(link, "<Button-1>", lambda event, msg=link: link_clicked(event, msg))
+            chat_messages.tag_bind(link, "<Enter>", change_cursor)
+            chat_messages.tag_bind(link, "<Leave>", restore_cursor)
+        chat_messages.insert(tk.END, "\n\n")  # Add empty lines between rows
+    
+    # Scroll to the bottom of the chat display
+    chat_messages.see(tk.END)
+    
+
+# Function to change the mouse cursor when near a link
+def change_cursor(event):
+    chat_messages.config(cursor="hand2")
+
+# Function to restore the default cursor when leaving the link area
+def restore_cursor(event):
+    chat_messages.config(cursor="")
+
+# Function to handle closing the tab
+def close_tab():
+    # Display a confirmation dialog
+    result = messagebox.askquestion("Close Tab", "Are you sure you want to close the tab? Your Conversation will be erased")
+
+    if result == "yes":
+        # Delete the conversation
+        chat_messages.delete("1.0", tk.END)
+        window.destroy()
+
+# Function to erase the conversation
+def erase_conversation():
+    # Display a confirmation dialog
+    result = messagebox.askquestion("Erase Conversation", "Are you sure you want to go back?")
+
+    if result == "yes":
+        # Find the index of the last bot message
+        last_bot_msg = chat_messages.search("Bot:", "end", backwards=True, regexp=True)
+
+        if last_bot_msg:
+            # Delete the conversation from the last bot message to the end
+            chat_messages.delete(last_bot_msg, tk.END)
+
+# Create a scrolled text widget to display the chat messages
+chat_messages = scrolledtext.ScrolledText(window, width=100, height=chat_height.get())
+chat_messages.pack(padx=10, pady=(0, 10))
+
+# Create a function to handle displaying bot response
+def display_bot_response(bot_response):
+    chat_messages.insert(tk.END, "\nBot: " + bot_response + "\n")
+    chat_messages.see(tk.END)
+
+# Add clickable links
+links = [
+    ["Statement Level", "Account Level", "Meter Level", "Usage Level"],
+    ["Charge Level", "Address Level", "Other Domain Queries"]
+]
+
+for row in links:
+    for link in row:
+        chat_messages.insert(tk.END, link + "\u2003\u2003\u2003\u2003\u2003\u2003", ("link", link))
+        chat_messages.tag_configure(link, foreground="blue", font=("Arial", 13))  # Increase font size here
+        chat_messages.tag_bind(link, "<Button-1>", lambda event, msg=link: link_clicked(event, msg))
+        chat_messages.tag_bind(link, "<Enter>", change_cursor)
+        chat_messages.tag_bind(link, "<Leave>", restore_cursor)
+    chat_messages.insert(tk.END, "\n\n")  # Add empty lines between rows
+
+# Create a binding function to handle key events
+def handle_key_event(event):
+    user_input = event.char
+    # Check if the user pressed Enter key
+    if user_input == '\r':
+        user_input = chat_messages.get("end-2l linestart", "end-1c")
+        chat_messages.insert(tk.END, "User: " + user_input + "\n")
+        chat_messages.see(tk.END)
+        chat_messages.delete("end-1l linestart", tk.END)
+
+# Bind the Enter key event to the input field
+chat_messages.bind("<Key>", handle_key_event)
+
+# Function to increase the chatbot display height
+def increase_height():
+    current_height = chat_height.get()
+    chat_height.set(current_height + 5)
+    resize_chatbot()
+
+# Function to decrease the chatbot display height
+def decrease_height():
+    current_height = chat_height.get()
+    if current_height > 5:
+        chat_height.set(current_height - 5)
+        resize_chatbot()
+
+# Create buttons to increase and decrease chatbot display height
+increase_button = tk.Button(window, text="Increase Height", command=increase_height, cursor="hand2")  # Set cursor to hand2
+increase_button.place(x=10, y=10)
+
+decrease_button = tk.Button(window, text="Decrease Height", command=decrease_height, cursor="hand2")  # Set cursor to hand2
+decrease_button.place(x=130, y=10)
+
+# Create a button to erase the conversation
+erase_button = tk.Button(window, text="Back", command=erase_conversation, cursor="hand2")  # Set cursor to hand2
+erase_button.place(x=10, y=60)
+
+# Create a button to go back to the main menu
+main_menu_button = tk.Button(window, text="Back to Main Menu", command=back_to_main_menu, cursor="hand2")  # Set cursor to hand2
+main_menu_button.place(x=130, y=60)
+
+# Set the spacing between links in the "Account Level" section
+LINK_SPACING = 1
+
+# Bind the close button to close_tab function
+window.protocol("WM_DELETE_WINDOW", close_tab)
+
+# Start the Tkinter event loop
+window.mainloop()
