@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .chat-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #f4f8f84a;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+            display: none;
+            /* initially hidden */
+            flex-direction: column;
+            max-height: 100%;
+            transition: height 0.3s ease;
+            width: 600px;
+            /* Set the fixed width */
+            border-left: 3px solid #0f140e;
+            /* Vertical border */
+            border-right: 3px solid #0f140e;
+            /* Vertical border */
+        }
+
+        /* Rest of your existing CSS... */
+
+        .chat-container.expanded {
+            height: 520px;
+        }
+
+        .chat-header {
+            background-color: #0f3a13;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            border-radius: 10px 10px 0 0;
+        }
+
+        .minimize-icon,
+        .close-icon {
+            cursor: pointer;
+            font-size: 20px;
+            line-height: 1;
+            color: rgb(238, 68, 16);
+            padding: 5px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+
+        .chat-messages {
+            padding: 10px;
+            overflow-y: auto;
+            overflow-x: auto;
+            /* Enable horizontal scrolling */
+            flex-grow: 1;
+        }
+
+        .message {
+            padding: 10px;
+            border-radius: 10px;
+            margin: 5px;
+            max-width: 70%;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-message,
+        .bot-message {
+            padding: 0px;
+            border-radius: 10px;
+            margin: 5px;
+            max-width: 70%;
+            /* Adjust the maximum width as needed */
+            word-wrap: break-word;
+            display: flex;
+            align-items: center;
+        }
+
+        .user-message {
+            color: #000000;
+            justify-content: flex-end;
+            margin-left: auto;
+            /* max-width: 90%; */
+
+        }
+
+        .bot-message {
+            justify-content: flex-start;
+            margin-right: auto;
+        }
+
+        .chat-input {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #0f3a13;
+            border-radius: 0 0 10px 10px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #0f3a13;
+            color: #fff;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .centered-text {
+            display: inline-block;
+            text-align: center;
+            width: 100%;
+            white-space: nowrap;
+        }
+
+        .minimized .chat-messages,
+        .minimized .chat-input,
+        .minimized #chat-header {
+            display: none;
+        }
+
+        .image-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background-color: #0f3a13;
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-radius: 50%;
+            cursor: pointer;
+            /* z-index: 999; Ensure it appears above other elements */
+        }
+
+        .image-container img {
+            max-width: 100%;
+            max-height: 100%;
+            width: 48px;
+            /* Set a fixed width */
+            height: 48px;
+            /* Set a fixed height */
+            border-radius: 50%;
+            cursor: pointer;
+        }
+    </style>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+
+    <title>Chatbot</title>
+</head>
+
+<body>
+    <div class="chat-container" id="chat-container">
+        <div class="chat-header" id="chat-header">
+            <span class="centered-text">Arcadia Domain Consultant Chatbot</span>
+            <span id="minimize-chat" class="minimize-icon">&#x2013;</span>
+            <span id="close-chat" class="close-icon">×</span>
+        </div>
+        <div class="chat-messages" id="chat-messages"></div>
+        <div class="chat-input">
+            <input type="text" id="user-input" placeholder="Type a message...">
+            <button id="send-button">Send</button>
+        </div>
+    </div>
+
+    <div class="image-container" id="chat-bubble" onclick="openChat()">
+        <img src="arcadia-logo.png" alt="Your Image">
+    </div>
+
+    <script>
+        function openChat() {
+            document.getElementById("chat-bubble").style.display = "none";
+            document.getElementById("chat-container").style.display = "flex";
+            simulateBotMessages();
+        }
+        const chatContainer = document.getElementById("chat-container");
+        const minimizeButton = document.getElementById("minimize-chat");
+        const closeChatButton = document.getElementById("close-chat");
+        const chatBubble = document.getElementById("chat-bubble");
+
+        let chatbotState = "expanded"; // Initial state
+
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const userInput = document.getElementById("user-input");
+            const sendButton = document.getElementById("send-button");
+            const chatMessages = document.getElementById("chat-messages");
+
+            function appendMessage(sender, message) {
+                const messageDiv = document.createElement("div");
+                messageDiv.classList.add("message");
+
+                if (sender === "user") {
+                    messageDiv.classList.add("user-message");
+                    message = "User: " + message;
+                } else if (sender === "bot") {
+                    messageDiv.classList.add("bot-message");
+                }
+
+                // const backgroundColor = sender === 'user' ? '#9ddba0' : '#9ddba2';
+                const backgroundColor = sender === 'user' ? '#d8ede9' : '#9ddba2';
+                messageDiv.innerHTML = `<span style="background-color:${backgroundColor}; padding: 10px; border-radius: 10px; margin: 5px; display: flex; align-items: center;">${message}</span>`;
+                chatMessages.appendChild(messageDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+
+            sendButton.addEventListener("click", function () {
+                const userMessage = userInput.value.trim();
+                if (userMessage !== "") {
+                    appendMessage("user", userMessage);
+                    const botResponse = getBotResponse(userMessage);
+                    appendMessage("bot", botResponse);
+                    userInput.value = "";
+                }
+            });
+
+            userInput.addEventListener("keyup", function (event) {
+                if (event.key === "Enter") {
+                    sendButton.click();
+                }
+            });
+
+            function getBotResponse(userMessage) {
+                return "Bot: " + "Hello, What can I do for you?";
+            }
+
+            function updateButtonIcons() {
+                if (chatbotState === "expanded") {
+                    minimizeButton.style.display = "inline";
+                } else {
+                    minimizeButton.style.display = "none";
+                }
+            }
+
+            updateButtonIcons();
+
+            let chatOpenedBefore = false;
+
+
+            minimizeButton.addEventListener("click", () => {
+                chatbotState = chatbotState === "expanded" ? "minimized" : "expanded";
+                updateButtonIcons();
+                toggleChat();
+
+                if (chatbotState === "expanded" && (!chatOpenedBefore || isChatEmpty())) {
+                    simulateBotMessages();
+
+
+                }
+            });
+
+            chatBubble.addEventListener("click", () => {
+                chatbotState = "expanded";
+                updateButtonIcons();
+                toggleChat();
+                chatBubble.style.display = "none";
+
+                if (chatOpenedBefore || isChatEmpty()) {
+                    simulateBotMessages();
+
+
+                }
+            });
+
+            function isChatEmpty() {
+                const chatMessages = document.getElementById("chat-messages");
+                return chatMessages.innerHTML.trim() === "";
+            }
+
+            closeChatButton.addEventListener("click", () => {
+                const chatMessages = document.getElementById("chat-messages");
+                chatMessages.innerHTML = "";
+                chatbotState = "minimized";
+                updateButtonIcons();
+                chatOpenedBefore = false;
+                toggleChat();
+
+
+            });
+
+            function toggleChat() {
+                if (chatbotState === "minimized") {
+                    minimizeButton.style.display = "none";
+                    chatContainer.classList.add("minimized");
+                    chatBubble.style.display = "block";
+                } else {
+                    minimizeButton.style.display = "inline";
+                    chatContainer.classList.remove("minimized");
+                }
+            }
+
+            function simulateBotMessages() {
+                const botMessages = [
+                    "Bot: How can I assist you today?",
+                    "Bot: You can ask me domain questions from any of the Levels",
+
+                ];
+
+                botMessages.forEach((message, index) => {
+                    setTimeout(() => {
+                        appendMessage("bot", message);
+                    }, index * 1000);
+                });
+            }
+
+            simulateBotMessages();
+        });
+
+
+    </script>
+
+</body>
+
+</html>
