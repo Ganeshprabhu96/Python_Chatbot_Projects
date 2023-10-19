@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../../../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../../../jacoco-resources/report.gif" type="image/gif"/><title>TestCase.java</title><link rel="stylesheet" href="../../../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../../../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../../../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../../../index.html" class="el_report">Application (19-Oct-2023 3:01:11 pm)</a> &gt; <a href="../../index.html" class="el_group">Application</a> &gt; <a href="../index.html" class="el_bundle">src/test/java</a> &gt; <a href="index.source.html" class="el_package">default</a> &gt; <span class="el_source">TestCase.java</span></div><h1>TestCase.java</h1><pre class="source lang-java linenums">import static org.junit.Assert.assertEquals;
+import javax.management.InvalidApplicationException;
+
+import org.junit.Test;
+
+import com.project.calculator.App;
+
+<span class="fc" id="L8">public class TestCase {</span>
+	@Test
+	public void testAdd() {
+<span class="fc" id="L11">		App application = new App();</span>
+<span class="fc" id="L12">		assertEquals(5, application.add(3, 2));</span>
+
+<span class="fc" id="L14">	}</span>
+
+	@Test
+	public void testSub() {
+<span class="fc" id="L18">		App application = new App();</span>
+<span class="fc" id="L19">		assertEquals(240, application.subtract(250, 10));</span>
+
+<span class="fc" id="L21">	}</span>
+
+	@Test
+	public void testMul() {
+<span class="fc" id="L25">		App application = new App();</span>
+<span class="fc" id="L26">		assertEquals(150, application.multiply(15, 10));</span>
+<span class="fc" id="L27">	}</span>
+
+	@Test
+	public void testDiv() {
+<span class="fc" id="L31">		App application = new App();</span>
+<span class="fc" id="L32">		assertEquals(2, application.divide(200, 100));</span>
+<span class="fc" id="L33">	}</span>
+
+	@Test(expected = IllegalArgumentException.class)
+	public void testDivideByZero() {
+<span class="fc" id="L37">		App calculator = new App();</span>
+<span class="nc" id="L38">		calculator.divide(10, 0);</span>
+//		assertEquals(0, calculator.divide(12, 0));
+<span class="nc" id="L40">	}</span>
+	
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.6.202009150832</span>Application (19-Oct-2023 3:01:11 pm)</div></body></html>
